@@ -9,14 +9,25 @@
       overflow: hidden;
     }
   </style>
+
+  <!-- IMPORT MAP (THIS FIXES THE "three" ERROR) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 </head>
+
 <body>
 
 <script type="module">
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/DRACOLoader.js";
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 
 // Scene
 const scene = new THREE.Scene();
@@ -51,7 +62,7 @@ scene.add(dirLight);
 // Draco loader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath(
-  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/"
+  "https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/"
 );
 
 // GLTF loader
@@ -65,31 +76,35 @@ loader.load(
     const model = gltf.scene;
     scene.add(model);
 
-    // Optional: auto-center model
+    // Auto center model
     const box = new THREE.Box3().setFromObject(model);
     const center = box.getCenter(new THREE.Vector3());
     model.position.sub(center);
   },
-  undefined,
+  (xhr) => {
+    console.log((xhr.loaded / xhr.total * 100) + "% loaded");
+  },
   (error) => {
     console.error("Error loading model:", error);
+    alert("Model failed to load. Check console.");
   }
 );
 
-// Resize handling
+// Resize
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Animation loop
+// Animation
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
 }
 animate();
+
 </script>
 
 </body>
